@@ -122,7 +122,7 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
 
         require(isTollBooth(msg.sender));
         require(vehicleSecret.entryBooth != msg.sender);
-        require(vehicleSecret.hashedSecret != hashedSecret);
+        require(vehicleSecret.hashedSecret == hashedSecret);
 
         if (routePrice == 0) {
             pendingPayments[vehicleSecret.entryBooth][msg.sender].vehicleSecrets.push(vehicleSecret);
@@ -131,12 +131,14 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
 
             return 2;
         } else {
-            uint refund = routePrice < vehicleSecret.deposit ? vehicleSecret.deposit - routePrice : 0;
+            uint vehicleType = getRegulator().getVehicleType(vehicleSecret.vehicle);
+            uint multipliedRoutePrice = routePrice * getMultiplier(vehicleType);
+            uint refund = multipliedRoutePrice < vehicleSecret.deposit ? vehicleSecret.deposit - multipliedRoutePrice : 0;
             vehicleSecret.deposit = 0;
             if (refund > 0) vehicleSecret.vehicle.transfer(refund);
-            collectableFees += routePrice;
+            collectableFees += multipliedRoutePrice;
 
-            LogRoadExited(msg.sender, vehicleSecret.hashedSecret, routePrice, refund);
+            LogRoadExited(msg.sender, vehicleSecret.hashedSecret, multipliedRoutePrice, refund);
 
             return 1;
         }
@@ -152,18 +154,6 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
         return queue.vehicleSecrets.length - queue.start;
     }
 
-    /**
-     * Can be called by anyone. In case more than 1 payment was pending when the oracle gave a price.
-     *     It should roll back when the contract is in `true` paused state.
-     *     It should roll back if booths are not really booths.
-     *     It should roll back if there are fewer than `count` pending payment that are solvable.
-     *     It should roll back if `count` is `0`.
-     * @param entryBooth the entry booth that has pending payments.
-     * @param exitBooth the exit booth that has pending payments.
-     * @param count the number of pending payments to clear for the exit booth.
-     * @return Whether the action was successful.
-     * Emits LogRoadExited as many times as count.
-     */
     function clearSomePendingPayments(address entryBooth,
                                       address exitBooth,
                                       uint count)
@@ -184,15 +174,17 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
         for (uint i = 0; i < count; i++) {
             // storage pointer
             VehicleSecret storage vehicleSecret = queueStruct.vehicleSecrets[queueStruct.start];
-            uint refund = routePrice < vehicleSecret.deposit ? vehicleSecret.deposit - routePrice : 0;
-            vehicleSecret.deposit = 0;
+            uint vehicleType = getRegulator().getVehicleType(vehicleSecret.vehicle);
+            uint multipliedRoutePrice = routePrice * getMultiplier(vehicleType);
+            uint refund = multipliedRoutePrice < vehicleSecret.deposit ? vehicleSecret.deposit - multipliedRoutePrice : 0;
+            vehicleSecrets[vehicleSecret.hashedSecret].deposit = 0;
             if (refund > 0) vehicleSecret.vehicle.transfer(refund);
-            collectableFees += routePrice;
+            collectableFees += multipliedRoutePrice;
 
             // delete(vehicleSecret); TODO
             queueStruct.start++;
 
-            LogRoadExited(exitBooth, vehicleSecret.hashedSecret, routePrice, refund);
+            LogRoadExited(exitBooth, vehicleSecret.hashedSecret, multipliedRoutePrice, refund);
         }
 
         return true;

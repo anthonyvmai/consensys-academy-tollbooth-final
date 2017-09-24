@@ -23,11 +23,11 @@ contract RoutePriceHolder is Owned, TollBoothHolder, RoutePriceHolderI {
 
         routePrices[entryBooth][exitBooth] = priceWeis;
 
+        LogRoutePriceSet(msg.sender, entryBooth, exitBooth, priceWeis);
+
         if (getPendingPaymentCount(entryBooth, exitBooth) > 0) {
             clearSomePendingPayments(entryBooth, exitBooth, 1);
         }
-
-        LogRoutePriceSet(msg.sender, entryBooth, exitBooth, priceWeis);
 
         return true;
     }

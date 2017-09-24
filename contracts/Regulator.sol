@@ -44,6 +44,7 @@ contract Regulator is Owned, RegulatorI {
 
         TollBoothOperator operator = new TollBoothOperator(true, deposit, address(this));
         operator.setOwner(owner);
+        operators[address(operator)] = true;
 
         LogTollBoothOperatorCreated(msg.sender, operator, owner, deposit);
 

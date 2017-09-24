@@ -12,6 +12,10 @@ contract Owned is OwnedI {
         _;
     }
 
+    function Owned() {
+        theOwner = msg.sender;
+    }
+
     function setOwner(address newOwner)
         fromOwner
         public

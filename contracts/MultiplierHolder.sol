@@ -14,7 +14,7 @@ contract MultiplierHolder is Owned, MultiplierHolderI {
         returns(bool success) {
 
         require(vehicleType != 0);
-        require(multipliers[vehicleType] == multiplier);
+        require(multipliers[vehicleType] != multiplier);
 
         multipliers[vehicleType] = multiplier;
 
