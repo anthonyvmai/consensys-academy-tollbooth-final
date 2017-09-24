@@ -87,29 +87,6 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
         return (vehicleSecret.vehicle, vehicleSecret.entryBooth, vehicleSecret.deposit);
     }
 
-    /**
-     * Event emitted when a vehicle used a route that has no known fee.
-     * It is a signal for the oracle to provide a price for the pair.
-     * @param exitSecretHashed The hashed secret that was defined at the time of entry.
-     * @param entryBooth The address of the booth the vehicle entered at.
-     * @param exitBooth The address of the booth the vehicle exited at.
-     */
-    event LogPendingPayment(
-        bytes32 indexed exitSecretHashed,
-        address indexed entryBooth,
-        address indexed exitBooth);
-
-    /**
-     * Called by the exit booth.
-     *     It should roll back when the contract is in the `true` paused state.
-     *     It should roll back when the sender is not a toll booth.
-     *     It should roll back if the exit is same as the entry.
-     *     It should roll back if the secret does not match a hashed one.
-     * @param exitSecretClear The secret given by the vehicle as it passed by the exit booth.
-     * @return status:
-     *   1: success, -> emits LogRoadExited
-     *   2: pending oracle -> emits LogPendingPayment
-     */
     function reportExitRoad(bytes32 exitSecretClear)
         whenNotPaused
         public
@@ -134,9 +111,9 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
             uint vehicleType = getRegulator().getVehicleType(vehicleSecret.vehicle);
             uint multipliedRoutePrice = routePrice * getMultiplier(vehicleType);
             uint refund = multipliedRoutePrice < vehicleSecret.deposit ? vehicleSecret.deposit - multipliedRoutePrice : 0;
+            collectableFees += (vehicleSecret.deposit - refund);
             vehicleSecret.deposit = 0;
             if (refund > 0) vehicleSecret.vehicle.transfer(refund);
-            collectableFees += multipliedRoutePrice;
 
             LogRoadExited(msg.sender, vehicleSecret.hashedSecret, multipliedRoutePrice, refund);
 
@@ -177,11 +154,10 @@ contract TollBoothOperator is Pausable, Regulated, MultiplierHolder, DepositHold
             uint vehicleType = getRegulator().getVehicleType(vehicleSecret.vehicle);
             uint multipliedRoutePrice = routePrice * getMultiplier(vehicleType);
             uint refund = multipliedRoutePrice < vehicleSecret.deposit ? vehicleSecret.deposit - multipliedRoutePrice : 0;
+            collectableFees += (vehicleSecret.deposit - refund);
             vehicleSecrets[vehicleSecret.hashedSecret].deposit = 0;
             if (refund > 0) vehicleSecret.vehicle.transfer(refund);
-            collectableFees += multipliedRoutePrice;
 
-            // delete(vehicleSecret); TODO
             queueStruct.start++;
 
             LogRoadExited(exitBooth, vehicleSecret.hashedSecret, multipliedRoutePrice, refund);
