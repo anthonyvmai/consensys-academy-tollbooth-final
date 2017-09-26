@@ -24,7 +24,8 @@ class Vehicle extends Component {
 			depositedWeis: "",
 			enters: [],
 			balance: "",
-			secrets: []
+			secrets: [],
+			exits: []
 		}
 	}
 
@@ -64,6 +65,7 @@ class Vehicle extends Component {
             }).then(() => {
                 this.setState({ balance: this.state.web3.eth.getBalance(accounts[2]).toString(10) })
                 this.initLogRoadEntered(this, this.state.vehicle, this.state.contractInstance)
+                this.initLogRoadExited(this, this.state.vehicle, this.state.contractInstance)
             })
         })
 	}
@@ -85,7 +87,33 @@ class Vehicle extends Component {
                     exitSecretHashed: result.args.exitSecretHashed,
                     depositedWeis: result.args.depositedWeis.toNumber()
                 })
-                component.setState({ enters: newEnters })
+                let newSecrets = JSON.parse(JSON.stringify(component.state.secrets))
+                newSecrets.push(result.args.exitSecretHashed)
+                component.setState({ enters: newEnters, secrets: newSecrets })
+            }
+        })
+    }
+
+    initLogRoadExited(component, address, instance) {
+        let eventNew = instance.LogRoadExited({owner: component.state.vehicle},{fromBlock: 0, toBlock: 'latest'})
+        eventNew.get(function(err, res) {
+            if (err) {
+                console.log(err)
+                return
+            }
+            for (let i = 0; i < res.length; i++) {
+                let result = res[i]
+                let newExits = JSON.parse(JSON.stringify(component.state.exits))
+                if (component.state.secrets.indexOf(result.args.exitSecretHashed) >= 0) {
+                    newExits.push({
+                        key: result.args.exitSecretHashed,
+                        exitBooth: result.args.exitBooth,
+                        exitSecretHashed: result.args.exitSecretHashed,
+                        finalFee: result.args.finalFee.toNumber(),
+                        refundWeis: result.args.refundWeis.toNumber()
+                    })
+                    component.setState({ exits: newExits })
+                }
             }
         })
     }
@@ -119,9 +147,35 @@ class Vehicle extends Component {
                 exitSecretHashed: result.args.exitSecretHashed,
                 depositedWeis: result.args.depositedWeis.toNumber()
             })
-            component.setState({ enters: newEnters })
+            let newSecrets = JSON.parse(JSON.stringify(component.state.secrets))
+            newSecrets.push(result.args.exitSecretHashed)
+            component.setState({ enters: newEnters, secrets: newSecrets })
             component.setState({ balance: component.state.web3.eth.getBalance(component.state.vehicle).toString(10) })
             console.log("Changed event received Enter, value: " + newEnters)
+        })
+    }
+
+    addSetExitListener(component) {
+        const updateEvent = this.state.contractInstance.LogRoadExited()
+        updateEvent.watch(function(err, result) {
+            if (err) {
+                console.log(err)
+                return
+            }
+            if (component.state.secrets.indexOf(result.args.exitSecretHashed) >= 0) {
+                let newExits = JSON.parse(JSON.stringify(component.state.exits))
+                newExits.push({
+                    key: result.args.exitSecretHashed,
+                    exitBooth: result.args.exitBooth,
+                    exitSecretHashed: result.args.exitSecretHashed,
+                    finalFee: result.args.finalFee.toNumber(),
+                    refundWeis: result.args.refundWeis.toNumber()
+                })
+                component.setState({ exits: newExits })
+                console.log("Changed event received Exit (this vehicle), value: " + newExits)
+            } else {
+                console.log("Changed event received Exit (different vehicle)")
+            }
         })
     }
 
@@ -208,6 +262,19 @@ class Vehicle extends Component {
         )
     }
 
+    renderExits() {
+        const exits = this.state.exits.map((d, i) =>
+                <li key={i}>exitBooth: {d.exitBooth}<br/>
+                exitSecretHashed: {d.exitSecretHashed}<br/>
+                finalFee: {d.finalFee}<br/>
+                refundWeis: {d.refundWeis}</li>)
+        return (
+            <UnorderedList
+                listItems={exits}
+            />
+        )
+    }
+
 	render() {
 		return (
             <div className="App">
@@ -225,6 +292,8 @@ class Vehicle extends Component {
                             <h3>Enters</h3>
                             {this.renderEnterField()}
                             {this.renderEnters()}
+                            <h3>Exits</h3>
+                            {this.renderExits()}
                         </div>
                     </div>
                 </main>

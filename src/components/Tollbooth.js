@@ -225,7 +225,7 @@ class Tollbooth extends Component {
                             {this.renderExitField()}
                             <h4>Completed</h4>
                             {this.renderExits()}
-                            <h4>Pending</h4>
+                            <h4>Pending History</h4>
                             {this.renderPendings()}
                         </div>
                     </div>
