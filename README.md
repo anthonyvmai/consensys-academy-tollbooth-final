@@ -1,8 +1,8 @@
 # Step 2
 
 ## Setup
-npm run install
-npm start
+* npm run install
+* npm start
 
 ## Intro
 

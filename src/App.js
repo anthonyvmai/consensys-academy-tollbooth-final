@@ -1,7 +1,4 @@
-import React, { Component } from 'react'
-import RegulatorContract from './build/contracts/Regulator.json'
-import TollBoothOperatorContract from './build/contracts/TollBoothOperator.json'
-import getWeb3 from './utils/getWeb3'
+import React from 'react'
 
 import Home from './components/Home.js'
 import Regulator from './components/Regulator.js'

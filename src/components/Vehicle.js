@@ -4,7 +4,6 @@ import TollBoothOperatorContract from '../build/contracts/TollBoothOperator.json
 import getWeb3 from '../utils/getWeb3'
 
 import OneFieldSubmit from './OneFieldSubmit.js'
-import TwoFieldSubmit from './TwoFieldSubmit.js'
 import ThreeFieldSubmit from './ThreeFieldSubmit.js'
 import UnorderedList from './UnorderedList.js'
 
