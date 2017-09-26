@@ -13,7 +13,6 @@ module.exports = function(deployer, network, accounts) {
         return theRegulator.createNewOperator(accounts[1], deposit, {from: accounts[0]})
     }).then(tx => {
         let operatorAddress = tx.logs[1].args.newOperator
-        console.log(operatorAddress)
         return TollBoothOperator.at(operatorAddress).setPaused(false, {from: accounts[1]})
     })
 }

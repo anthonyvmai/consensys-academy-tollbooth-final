@@ -201,8 +201,8 @@ class Regulator extends Component {
     }
 
     renderVehicles () {
-        const vehicles = this.state.vehicles.map((d) =>
-                <li>sender: {d.sender}<br/>
+        const vehicles = this.state.vehicles.map((d, i) =>
+                <li key={i}>sender: {d.sender}<br/>
                 vehicle: {d.vehicle}<br/>
                 type: {d.vehicleType}</li>)
         return (
@@ -213,8 +213,8 @@ class Regulator extends Component {
     }
 
     renderOperators () {
-        const operators = this.state.operators.map((d) =>
-                <li>sender: {d.sender}<br/>
+        const operators = this.state.operators.map((d, i) =>
+                <li key={i}>sender: {d.sender}<br/>
                 newOperator: {d.newOperator}<br/>
                 owner: {d.owner}<br/>
                 depositWeis: {d.depositWeis}</li>)

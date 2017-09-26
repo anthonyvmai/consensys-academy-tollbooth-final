@@ -303,8 +303,8 @@ class Operator extends Component {
     }
 
     renderTollbooths() {
-        const tollbooths = this.state.tollbooths.map((d) =>
-                <li>sender: {d.sender}<br/>
+        const tollbooths = this.state.tollbooths.map((d, i) =>
+                <li key={i}>sender: {d.sender}<br/>
                 tollBooth: {d.tollBooth}</li>)
         return (
             <UnorderedList
@@ -314,8 +314,8 @@ class Operator extends Component {
     }
 
     renderRoutePrices() {
-        const routePrices = this.state.routePrices.map((d) =>
-                <li>sender: {d.sender}<br/>
+        const routePrices = this.state.routePrices.map((d, i) =>
+                <li key={i}>sender: {d.sender}<br/>
                 entryBooth: {d.entryBooth}<br/>
                 exitBooth: {d.exitBooth}<br/>
                 priceWeis: {d.priceWeis}</li>)
@@ -327,8 +327,8 @@ class Operator extends Component {
     }
 
     renderMultipliers() {
-        const multipliers = this.state.multipliers.map((d) =>
-                <li>sender: {d.sender}<br/>
+        const multipliers = this.state.multipliers.map((d, i) =>
+                <li key={i}>sender: {d.sender}<br/>
                 vehicleType: {d.vehicleType}<br/>
                 multiplier: {d.multiplier}</li>)
         return (

@@ -196,8 +196,8 @@ class Vehicle extends Component {
     }
 
     renderEnters() {
-        const enters = this.state.enters.map((d) =>
-                <li>vehicle: {d.vehicle}<br/>
+        const enters = this.state.enters.map((d, i) =>
+                <li key={i}>vehicle: {d.vehicle}<br/>
                 entryBooth: {d.entryBooth}<br/>
                 exitSecretHashed: {d.exitSecretHashed}<br/>
                 depositedWeis: {d.depositedWeis}</li>)

@@ -188,8 +188,8 @@ class Tollbooth extends Component {
     }
 
     renderExits() {
-        const exits = this.state.exits.map((d) =>
-                <li>exitBooth: {d.exitBooth}<br/>
+        const exits = this.state.exits.map((d, i) =>
+                <li key={i}>exitBooth: {d.exitBooth}<br/>
                 exitSecretHashed: {d.exitSecretHashed}<br/>
                 finalFee: {d.finalFee}<br/>
                 refundWeis: {d.refundWeis}</li>)
@@ -201,8 +201,8 @@ class Tollbooth extends Component {
     }
 
     renderPendings() {
-        const pendings = this.state.pendings.map((d) =>
-                <li>exitSecretHashed: {d.exitSecretHashed}<br/>
+        const pendings = this.state.pendings.map((d, i) =>
+                <li key={i}>exitSecretHashed: {d.exitSecretHashed}<br/>
                 entryBooth: {d.entryBooth}<br/>
                 exitBooth: {d.exitBooth}</li>)
         return (

@@ -3,6 +3,7 @@
 ## Setup
 * npm run install
 * npm start
+the webapp will be served off localhost:3000
 
 ## Intro
 
