@@ -7,48 +7,48 @@ import OneFieldSubmit from './OneFieldSubmit.js'
 import UnorderedList from './UnorderedList.js'
 
 class Tollbooth extends Component {
-	constructor(props) {
-		super(props)
+    constructor(props) {
+        super(props)
 
-		this.state = {
-			web3: null,
-			regulator: null,
-			contractInstance: null,
-			operatorOwner: null,
-			tollbooth: null,
-			exitSecretClear: "",
-			exits: [],
-			pendings: []
-		}
-	}
+        this.state = {
+            web3: null,
+            regulator: null,
+            contractInstance: null,
+            operatorOwner: null,
+            tollbooth: null,
+            exitSecretClear: "",
+            exits: [],
+            pendings: []
+        }
+    }
 
-	componentWillMount() {
-		getWeb3
-		.then(results => {
-			this.setState({
-				web3: results.web3
-			})
+    componentWillMount() {
+        getWeb3
+        .then(results => {
+            this.setState({
+                web3: results.web3
+            })
 
-			this.instantiateContract()
-		})
-		.catch(() => {
-			console.log('Error finding web3.')
-		})
-	}
+            this.instantiateContract()
+        })
+        .catch(() => {
+            console.log('Error finding web3.')
+        })
+    }
 
-	instantiateContract() {
-		const contract = require('truffle-contract')
-		const regulator = contract(RegulatorContract)
-		regulator.setProvider(this.state.web3.currentProvider)
+    instantiateContract() {
+        const contract = require('truffle-contract')
+        const regulator = contract(RegulatorContract)
+        regulator.setProvider(this.state.web3.currentProvider)
 
         let regulatorInstance
-		const operator = contract(TollBoothOperatorContract)
-		operator.setProvider(this.state.web3.currentProvider)
+        const operator = contract(TollBoothOperatorContract)
+        operator.setProvider(this.state.web3.currentProvider)
 
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			regulator.deployed().then(instance => {
-			    regulatorInstance = instance
-			    return this.getOperatorAddress(accounts[1], regulatorInstance)
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            regulator.deployed().then(instance => {
+                regulatorInstance = instance
+                return this.getOperatorAddress(accounts[1], regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
@@ -61,7 +61,7 @@ class Tollbooth extends Component {
                 this.initLogPendingPayment(this, this.state.tollbooth, this.state.contractInstance)
             })
         })
-	}
+    }
 
     initLogRoadExited(component, address, instance) {
         let eventNew = instance.LogRoadExited({owner: address},{fromBlock: 0, toBlock: 'latest'})
@@ -159,13 +159,10 @@ class Tollbooth extends Component {
         })
     }
 
-	submitExit() {
-	    return this.state.contractInstance.reportExitRoad(
+    submitExit() {
+        return this.state.contractInstance.reportExitRoad(
             this.state.exitSecretClear,
             {from: this.state.tollbooth, gas: 2000000})
-        .then(tx => {
-            console.log(tx)
-        })
         .catch((err) => {
             console.log(err)
             return alert(err)
@@ -212,8 +209,8 @@ class Tollbooth extends Component {
         )
     }
 
-	render() {
-		return (
+    render() {
+        return (
             <div className="App">
                 <main className="container">
                     <div className="pure-g">
@@ -231,8 +228,8 @@ class Tollbooth extends Component {
                     </div>
                 </main>
             </div>
-		)
-	}
+        )
+    }
 }
 
 export default Tollbooth

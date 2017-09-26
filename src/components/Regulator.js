@@ -6,53 +6,53 @@ import TwoFieldSubmit from './TwoFieldSubmit.js'
 import UnorderedList from './UnorderedList.js'
 
 class Regulator extends Component {
-	constructor(props) {
-		super(props)
+    constructor(props) {
+        super(props)
 
-		this.state = {
-			web3: null,
-			contractInstance: null,
-			regulatorOwner: null,
-			vehicleAddress: "",
-			vehicleType: "",
-			vehicles: [],
-			owner: "",
-			deposit: "",
-			operators: []
-		}
-	}
+        this.state = {
+            web3: null,
+            contractInstance: null,
+            regulatorOwner: null,
+            vehicleAddress: "",
+            vehicleType: "",
+            vehicles: [],
+            owner: "",
+            deposit: "",
+            operators: []
+        }
+    }
 
-	componentWillMount() {
-		getWeb3
-		.then(results => {
-			this.setState({
-				web3: results.web3
-			})
+    componentWillMount() {
+        getWeb3
+        .then(results => {
+            this.setState({
+                web3: results.web3
+            })
 
-			this.instantiateContract()
-		})
-		.catch(() => {
-			console.log('Error finding web3.')
-		})
-	}
+            this.instantiateContract()
+        })
+        .catch(() => {
+            console.log('Error finding web3.')
+        })
+    }
 
-	instantiateContract() {
+    instantiateContract() {
 
-		const contract = require('truffle-contract')
-		const regulator = contract(RegulatorContract)
-		regulator.setProvider(this.state.web3.currentProvider)
+        const contract = require('truffle-contract')
+        const regulator = contract(RegulatorContract)
+        regulator.setProvider(this.state.web3.currentProvider)
 
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			regulator.deployed().then(instance => {
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            regulator.deployed().then(instance => {
                 this.setState({ contractInstance: instance, regulatorOwner: accounts[0]})
                 this.addSetVehicleListener(this)
                 this.addSetOperatorListener(this)
                 this.initLogVehicleTypeSet(this, this.state.regulatorOwner, this.state.contractInstance)
                 this.initLogTollBoothOperatorCreated(this, this.state.regulatorOwner, this.state.contractInstance)
                 return
-			})
-		})
-	}
+            })
+        })
+    }
 
     initLogVehicleTypeSet(component, address, instance) {
         let eventNew = instance.LogVehicleTypeSet({owner: address},{fromBlock: 0, toBlock: 'latest'})
@@ -136,8 +136,8 @@ class Regulator extends Component {
         })
     }
 
-	submitVehicleType() {
-	    return this.state.contractInstance.setVehicleType(
+    submitVehicleType() {
+        return this.state.contractInstance.setVehicleType(
             this.state.vehicleAddress,
             this.state.vehicleType,
             {from: this.state.regulatorOwner})
@@ -146,8 +146,8 @@ class Regulator extends Component {
         })
     }
 
-	submitOperator() {
-	    return this.state.contractInstance.createNewOperator(
+    submitOperator() {
+        return this.state.contractInstance.createNewOperator(
             this.state.owner,
             this.state.deposit,
             {from: this.state.regulatorOwner, gas: 2000000})
@@ -225,8 +225,8 @@ class Regulator extends Component {
         )
     }
 
-	render() {
-		return (
+    render() {
+        return (
             <div className="App">
                 <main className="container">
                     <div className="pure-g">
@@ -243,8 +243,8 @@ class Regulator extends Component {
                     </div>
                 </main>
             </div>
-		)
-	}
+        )
+    }
 }
 
 export default Regulator

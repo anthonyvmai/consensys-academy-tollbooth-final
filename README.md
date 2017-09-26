@@ -2,6 +2,7 @@
 
 ## Setup
 * npm run install
+* truffle migrate
 * npm start
 the webapp will be served off localhost:3000
 

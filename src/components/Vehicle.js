@@ -8,54 +8,56 @@ import ThreeFieldSubmit from './ThreeFieldSubmit.js'
 import UnorderedList from './UnorderedList.js'
 
 class Vehicle extends Component {
-	constructor(props) {
-		super(props)
+    constructor(props) {
+        super(props)
 
-		this.state = {
-			web3: null,
-			regulator: null,
-			contractInstance: null,
-			operatorOwner: null,
-			vehicle: null,
-			entryBooth: "",
-			hashMe: "",
-			hashed: "",
-			exitSecretHashed: "",
-			depositedWeis: "",
-			enters: [],
-			balance: "",
-			secrets: [],
-			exits: []
-		}
-	}
+        this.state = {
+            web3: null,
+            regulator: null,
+            contractInstance: null,
+            operatorOwner: null,
+            vehicle: null,
+            entryBooth: "",
+            hashMe: "",
+            hashed: "",
+            exitSecretHashed: "",
+            depositedWeis: "",
+            enters: [],
+            balance: "",
+            secrets: [],
+            exits: []
+        }
+    }
 
-	componentWillMount() {
-		getWeb3
-		.then(results => {
-			this.setState({
-				web3: results.web3
-			})
+    componentWillMount() {
+        getWeb3
+        .then(results => {
+            this.setState({
+                web3: results.web3
+            })
+            const Promise = require('bluebird')
+            Promise.promisifyAll(this.state.web3.eth, { suffix: 'Promise' })
 
-			this.instantiateContract()
-		})
-		.catch(() => {
-			console.log('Error finding web3.')
-		})
-	}
+            this.instantiateContract()
+        })
+        .catch(() => {
+            console.log('Error finding web3.')
+        })
+    }
 
-	instantiateContract() {
-		const contract = require('truffle-contract')
-		const regulator = contract(RegulatorContract)
-		regulator.setProvider(this.state.web3.currentProvider)
+    instantiateContract() {
+        const contract = require('truffle-contract')
+        const regulator = contract(RegulatorContract)
+        regulator.setProvider(this.state.web3.currentProvider)
 
         let regulatorInstance
-		const operator = contract(TollBoothOperatorContract)
-		operator.setProvider(this.state.web3.currentProvider)
+        const operator = contract(TollBoothOperatorContract)
+        operator.setProvider(this.state.web3.currentProvider)
 
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			regulator.deployed().then(instance => {
-			    regulatorInstance = instance
-			    return this.getOperatorAddress(accounts[1], regulatorInstance)
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            regulator.deployed().then(instance => {
+                regulatorInstance = instance
+                return this.getOperatorAddress(accounts[1], regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
@@ -63,12 +65,15 @@ class Vehicle extends Component {
                 this.addSetEnterListener(this)
                 return
             }).then(() => {
-                this.setState({ balance: this.state.web3.eth.getBalance(accounts[2]).toString(10) })
+                console.log(accounts)
+                return this.state.web3.eth.getBalancePromise(accounts[2])
+            }).then(balance => {
+                this.setState({ balance: balance.toString(10) })
                 this.initLogRoadEntered(this, this.state.vehicle, this.state.contractInstance)
                 this.initLogRoadExited(this, this.state.vehicle, this.state.contractInstance)
             })
         })
-	}
+    }
 
     initLogRoadEntered(component, address, instance) {
         let eventNew = instance.LogRoadEntered({owner: component.state.vehicle},{fromBlock: 0, toBlock: 'latest'})
@@ -150,8 +155,11 @@ class Vehicle extends Component {
             let newSecrets = JSON.parse(JSON.stringify(component.state.secrets))
             newSecrets.push(result.args.exitSecretHashed)
             component.setState({ enters: newEnters, secrets: newSecrets })
-            component.setState({ balance: component.state.web3.eth.getBalance(component.state.vehicle).toString(10) })
             console.log("Changed event received Enter, value: " + newEnters)
+            return component.state.web3.eth.getBalancePromise(component.state.vehicle)
+            .then(balance => {
+                component.setState({ balance: balance.toString(10) })
+            })
         })
     }
 
@@ -179,8 +187,8 @@ class Vehicle extends Component {
         })
     }
 
-	submitEnter() {
-	    return this.state.contractInstance.enterRoad(
+    submitEnter() {
+        return this.state.contractInstance.enterRoad(
             this.state.entryBooth,
             this.state.exitSecretHashed,
             {from: this.state.vehicle, value: this.state.depositedWeis, gas: 2000000})
@@ -194,10 +202,10 @@ class Vehicle extends Component {
         })
     }
 
-	submitHashMe() {
-	    return this.state.contractInstance.hashSecret(this.state.hashMe)
-	    .then(h => {
-	        this.setState({ hashed: h})
+    submitHashMe() {
+        return this.state.contractInstance.hashSecret(this.state.hashMe)
+        .then(h => {
+            this.setState({ hashed: h})
         })
         .catch((err) => {
             console.log(err)
@@ -275,8 +283,8 @@ class Vehicle extends Component {
         )
     }
 
-	render() {
-		return (
+    render() {
+        return (
             <div className="App">
                 <main className="container">
                     <div className="pure-g">
@@ -298,8 +306,8 @@ class Vehicle extends Component {
                     </div>
                 </main>
             </div>
-		)
-	}
+        )
+    }
 }
 
 export default Vehicle

@@ -9,52 +9,52 @@ import ThreeFieldSubmit from './ThreeFieldSubmit.js'
 import UnorderedList from './UnorderedList.js'
 
 class Operator extends Component {
-	constructor(props) {
-		super(props)
+    constructor(props) {
+        super(props)
 
-		this.state = {
-			web3: null,
-			contractInstance: null,
-			operatorOwner: null,
-			tollboothAddress: "",
-			tollbooths: [],
-			entryBooth: "",
-			exitBooth: "",
-			priceWeis: "",
-			routePrices: [],
-			vehicleType: "",
+        this.state = {
+            web3: null,
+            contractInstance: null,
+            operatorOwner: null,
+            tollboothAddress: "",
+            tollbooths: [],
+            entryBooth: "",
+            exitBooth: "",
+            priceWeis: "",
+            routePrices: [],
+            vehicleType: "",
             multiplier: "",
             multipliers: []
-		}
-	}
+        }
+    }
 
-	componentWillMount() {
-		getWeb3
-		.then(results => {
-			this.setState({
-				web3: results.web3
-			})
+    componentWillMount() {
+        getWeb3
+        .then(results => {
+            this.setState({
+                web3: results.web3
+            })
 
-			this.instantiateContract()
-		})
-		.catch(() => {
-			console.log('Error finding web3.')
-		})
-	}
+            this.instantiateContract()
+        })
+        .catch(() => {
+            console.log('Error finding web3.')
+        })
+    }
 
-	instantiateContract() {
-		const contract = require('truffle-contract')
-		const regulator = contract(RegulatorContract)
-		regulator.setProvider(this.state.web3.currentProvider)
+    instantiateContract() {
+        const contract = require('truffle-contract')
+        const regulator = contract(RegulatorContract)
+        regulator.setProvider(this.state.web3.currentProvider)
 
         let regulatorInstance
-		const operator = contract(TollBoothOperatorContract)
-		operator.setProvider(this.state.web3.currentProvider)
+        const operator = contract(TollBoothOperatorContract)
+        operator.setProvider(this.state.web3.currentProvider)
 
-		this.state.web3.eth.getAccounts((error, accounts) => {
-			regulator.deployed().then(instance => {
-			    regulatorInstance = instance
-			    return this.getOperatorAddress(accounts[1], regulatorInstance)
+        this.state.web3.eth.getAccounts((error, accounts) => {
+            regulator.deployed().then(instance => {
+                regulatorInstance = instance
+                return this.getOperatorAddress(accounts[1], regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
@@ -67,7 +67,7 @@ class Operator extends Component {
                 this.initLogMultiplierSet(this, this.state.operatorOwner, this.state.contractInstance)
             })
         })
-	}
+    }
 
     getOperatorAddress(address, instance) {
         return new Promise(function(resolve, reject){
@@ -203,8 +203,8 @@ class Operator extends Component {
         })
     }
 
-	submitTollbooth() {
-	    return this.state.contractInstance.addTollBooth(
+    submitTollbooth() {
+        return this.state.contractInstance.addTollBooth(
             this.state.tollboothAddress,
             {from: this.state.operatorOwner})
         .catch((err) => {
@@ -213,8 +213,8 @@ class Operator extends Component {
         })
     }
 
-	submitRoutePrice() {
-	    return this.state.contractInstance.setRoutePrice(
+    submitRoutePrice() {
+        return this.state.contractInstance.setRoutePrice(
             this.state.entryBooth,
             this.state.exitBooth,
             this.state.priceWeis,
@@ -225,8 +225,8 @@ class Operator extends Component {
         })
     }
 
-	submitMultiplier() {
-	    return this.state.contractInstance.setMultiplier(
+    submitMultiplier() {
+        return this.state.contractInstance.setMultiplier(
             this.state.vehicleType,
             this.state.multiplier,
             {from: this.state.operatorOwner})
@@ -338,8 +338,8 @@ class Operator extends Component {
         )
     }
 
-	render() {
-		return (
+    render() {
+        return (
             <div className="App">
                 <main className="container">
                     <div className="pure-g">
@@ -359,8 +359,8 @@ class Operator extends Component {
                     </div>
                 </main>
             </div>
-		)
-	}
+        )
+    }
 }
 
 export default Operator
