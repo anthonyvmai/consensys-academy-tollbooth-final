@@ -15,6 +15,7 @@ class Operator extends Component {
         this.state = {
             web3: null,
             contractInstance: null,
+            currentUser: null,
             operatorOwner: null,
             tollboothAddress: "",
             tollbooths: [],
@@ -52,13 +53,17 @@ class Operator extends Component {
         operator.setProvider(this.state.web3.currentProvider)
 
         this.state.web3.eth.getAccounts((error, accounts) => {
+            this.setState({ currentUser: accounts[0] })
             regulator.deployed().then(instance => {
                 regulatorInstance = instance
-                return this.getOperatorAddress(accounts[1], regulatorInstance)
+                return this.getOperatorAddress(regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
-                this.setState({ contractInstance: operatorInstance, operatorOwner: accounts[1]})
+                this.setState({ contractInstance: operatorInstance})
+                return operatorInstance.getOwner()
+            }).then(owner => {
+                this.setState({ operatorOwner: owner })
                 this.addSetTollboothListener(this)
                 this.addSetRoutePriceListener(this)
                 this.addSetMultiplierListener(this)
@@ -69,9 +74,9 @@ class Operator extends Component {
         })
     }
 
-    getOperatorAddress(address, instance) {
+    getOperatorAddress(instance) {
         return new Promise(function(resolve, reject){
-            let eventNewOperator = instance.LogTollBoothOperatorCreated({owner: address},{fromBlock: 0, toBlock: 'latest'})
+            let eventNewOperator = instance.LogTollBoothOperatorCreated({},{fromBlock: 0, toBlock: 'latest'})
             eventNewOperator.get(function(err, result) {
                 if (err) {
                     console.log(err)
@@ -206,7 +211,7 @@ class Operator extends Component {
     submitTollbooth() {
         return this.state.contractInstance.addTollBooth(
             this.state.tollboothAddress,
-            {from: this.state.operatorOwner})
+            {from: this.state.currentUser})
         .catch((err) => {
             console.log(err)
             return alert(err)
@@ -218,7 +223,7 @@ class Operator extends Component {
             this.state.entryBooth,
             this.state.exitBooth,
             this.state.priceWeis,
-            {from: this.state.operatorOwner, gas: 2000000})
+            {from: this.state.currentUser})
         .catch((err) => {
             console.log(err)
             return alert(err)
@@ -229,7 +234,7 @@ class Operator extends Component {
         return this.state.contractInstance.setMultiplier(
             this.state.vehicleType,
             this.state.multiplier,
-            {from: this.state.operatorOwner})
+            {from: this.state.currentUser})
         .catch((err) => {
             console.log(err)
             return alert(err)
@@ -345,7 +350,8 @@ class Operator extends Component {
                     <div className="pure-g">
                         <div className="pure-u-1-1">
                             <h2>Operator</h2>
-                            <p>{"owner accounts[1]: " + this.state.operatorOwner}</p>
+                            <p>{"current user: " + this.state.currentUser}</p>
+                            <p>{"owner (accounts[1]): " + this.state.operatorOwner}</p>
                             <h3>Tollbooths</h3>
                             {this.renderTollboothField()}
                             {this.renderTollbooths()}

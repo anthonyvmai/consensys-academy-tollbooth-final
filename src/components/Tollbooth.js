@@ -46,17 +46,19 @@ class Tollbooth extends Component {
         operator.setProvider(this.state.web3.currentProvider)
 
         this.state.web3.eth.getAccounts((error, accounts) => {
+            this.setState({ tollbooth: accounts[0] })
             regulator.deployed().then(instance => {
                 regulatorInstance = instance
                 return this.getOperatorAddress(accounts[1], regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
-                this.setState({ regulator: regulatorInstance, contractInstance: operatorInstance, operatorOwner: accounts[1], tollbooth: accounts[3]})
+                this.setState({ regulator: regulatorInstance, contractInstance: operatorInstance})
+                return operatorInstance.getOwner()
+            }).then(owner => {
+                this.setState({ operatorOwner: owner })
                 this.addSetExitListener(this)
                 this.addSetPendingListener(this)
-                return
-            }).then(() => {
                 this.initLogRoadExited(this, this.state.tollbooth, this.state.contractInstance)
                 this.initLogPendingPayment(this, this.state.tollbooth, this.state.contractInstance)
             })
@@ -162,7 +164,7 @@ class Tollbooth extends Component {
     submitExit() {
         return this.state.contractInstance.reportExitRoad(
             this.state.exitSecretClear,
-            {from: this.state.tollbooth, gas: 2000000})
+            {from: this.state.tollbooth})
         .catch((err) => {
             console.log(err)
             return alert(err)
@@ -217,7 +219,7 @@ class Tollbooth extends Component {
                         <div className="pure-u-1-1">
                             <h2>Tollbooth</h2>
                             <p>Remember to register this tollbooth address in the operator</p>
-                            <p>{"tollbooth accounts[3]: " + this.state.tollbooth}</p>
+                            <p>{"current user: " + this.state.tollbooth}</p>
                             <h3>Exits</h3>
                             {this.renderExitField()}
                             <h4>Completed</h4>

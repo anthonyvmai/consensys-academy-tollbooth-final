@@ -55,22 +55,39 @@ class Vehicle extends Component {
         operator.setProvider(this.state.web3.currentProvider)
 
         this.state.web3.eth.getAccounts((error, accounts) => {
+            this.setState({ vehicle: accounts[0] })
             regulator.deployed().then(instance => {
                 regulatorInstance = instance
-                return this.getOperatorAddress(accounts[1], regulatorInstance)
+                return this.getOperatorAddress(regulatorInstance)
             }).then(operatorAddress => {
                 return operator.at(operatorAddress)
             }).then(operatorInstance => {
-                this.setState({ regulator: regulatorInstance, contractInstance: operatorInstance, operatorOwner: accounts[1], vehicle: accounts[2]})
+                this.setState({ regulator: regulatorInstance, contractInstance: operatorInstance})
+                return operatorInstance.getOwner()
+            }).then(owner => {
+                this.setState({ operatorOwner: owner})
                 this.addSetEnterListener(this)
                 return
             }).then(() => {
-                console.log(accounts)
-                return this.state.web3.eth.getBalancePromise(accounts[2])
+                return this.state.web3.eth.getBalancePromise(this.state.vehicle)
             }).then(balance => {
                 this.setState({ balance: balance.toString(10) })
                 this.initLogRoadEntered(this, this.state.vehicle, this.state.contractInstance)
-                this.initLogRoadExited(this, this.state.vehicle, this.state.contractInstance)
+                this.initLogRoadExited(this, this.state.contractInstance)
+            })
+        })
+    }
+
+    getOperatorAddress(instance){
+        return new Promise(function(resolve, reject){
+            let eventNewOperator = instance.LogTollBoothOperatorCreated({},{fromBlock: 0, toBlock: 'latest'})
+            eventNewOperator.get(function(err, result) {
+                if (err) {
+                    console.log(err)
+                    return
+                }
+                let operatorContractAddress = result[0].args.newOperator
+                resolve(operatorContractAddress)
             })
         })
     }
@@ -99,8 +116,8 @@ class Vehicle extends Component {
         })
     }
 
-    initLogRoadExited(component, address, instance) {
-        let eventNew = instance.LogRoadExited({owner: component.state.vehicle},{fromBlock: 0, toBlock: 'latest'})
+    initLogRoadExited(component, instance) {
+        let eventNew = instance.LogRoadExited({},{fromBlock: 0, toBlock: 'latest'})
         eventNew.get(function(err, res) {
             if (err) {
                 console.log(err)
@@ -120,20 +137,6 @@ class Vehicle extends Component {
                     component.setState({ exits: newExits })
                 }
             }
-        })
-    }
-
-    getOperatorAddress(address, instance){
-        return new Promise(function(resolve, reject){
-            let eventNewOperator = instance.LogTollBoothOperatorCreated({owner: address},{fromBlock: 0, toBlock: 'latest'})
-            eventNewOperator.get(function(err, result) {
-                if (err) {
-                    console.log(err)
-                    return
-                }
-                let operatorContractAddress = result[0].args.newOperator
-                resolve(operatorContractAddress)
-            })
         })
     }
 
@@ -291,7 +294,7 @@ class Vehicle extends Component {
                         <div className="pure-u-1-1">
                             <h2>Vehicle</h2>
                             <p>Remember to set vehicleType, set multiplier, register entryBooth</p>
-                            <p>{"vehicle accounts[2]: " + this.state.vehicle}</p>
+                            <p>{"current user: " + this.state.vehicle}</p>
                             <h3>Balance</h3>
                             {this.state.balance}
                             <h3>Hash</h3>

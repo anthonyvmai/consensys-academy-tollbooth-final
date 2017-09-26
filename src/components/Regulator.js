@@ -12,6 +12,7 @@ class Regulator extends Component {
         this.state = {
             web3: null,
             contractInstance: null,
+            currentUser: null,
             regulatorOwner: null,
             vehicleAddress: "",
             vehicleType: "",
@@ -43,8 +44,12 @@ class Regulator extends Component {
         regulator.setProvider(this.state.web3.currentProvider)
 
         this.state.web3.eth.getAccounts((error, accounts) => {
+            this.setState({ currentUser: accounts[0] })
             regulator.deployed().then(instance => {
-                this.setState({ contractInstance: instance, regulatorOwner: accounts[0]})
+                this.setState({ contractInstance: instance })
+                return instance.getOwner()
+            }).then(owner => {
+                this.setState({ regulatorOwner: owner })
                 this.addSetVehicleListener(this)
                 this.addSetOperatorListener(this)
                 this.initLogVehicleTypeSet(this, this.state.regulatorOwner, this.state.contractInstance)
@@ -140,7 +145,7 @@ class Regulator extends Component {
         return this.state.contractInstance.setVehicleType(
             this.state.vehicleAddress,
             this.state.vehicleType,
-            {from: this.state.regulatorOwner})
+            {from: this.state.currentUser})
         .catch((err) => {
             return alert(err)
         })
@@ -150,7 +155,7 @@ class Regulator extends Component {
         return this.state.contractInstance.createNewOperator(
             this.state.owner,
             this.state.deposit,
-            {from: this.state.regulatorOwner, gas: 2000000})
+            {from: this.state.currentUser})
         .catch((err) => {
             return alert(err)
         })
@@ -232,7 +237,8 @@ class Regulator extends Component {
                     <div className="pure-g">
                         <div className="pure-u-1-1">
                             <h2>Regulator</h2>
-                            <p>{"owner accounts[0]: " + this.state.regulatorOwner}</p>
+                            <p>{"current user: " + this.state.currentUser}</p>
+                            <p>{"owner (accounts[0]): " + this.state.regulatorOwner}</p>
                             <h3>Operators</h3>
                             {this.renderOperatorField()}
                             {this.renderOperators()}
