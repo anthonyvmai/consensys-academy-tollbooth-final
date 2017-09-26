@@ -1,5 +1,9 @@
 # Step 2
 
+## Setup
+npm run install
+npm start
+
 ## Intro
 
 You will complete this Truffle project.
