@@ -8,7 +8,8 @@ the webapp will be served off localhost:3000
 please use metamask to use this application
 
 known bugs:
- any events that occurs in the most recent block will be listed twice in the UI
+* any events that occurs in the most recent block will be listed twice in the UI
+* must manually refresh page when switching metamask accounts for the page to update
 
 ## Intro
 
